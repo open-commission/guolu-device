@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// PWM driver for Linux-based embedded systems using sysfs interface
+/// 使用sysfs接口的Linux嵌入式系统PWM驱动
 const Pwm = @This();
 
 chip: u32,
@@ -18,7 +18,7 @@ const Error = error{
     EnableFailed,
 };
 
-/// Initialize PWM channel
+/// 初始化PWM通道
 pub fn init(chip: u32, channel: u32) !Pwm {
     var pwm = Pwm{
         .chip = chip,
@@ -36,7 +36,7 @@ pub fn init(chip: u32, channel: u32) !Pwm {
     return pwm;
 }
 
-/// Deinitialize PWM channel
+/// 反初始化PWM通道
 pub fn deinit(self: *Pwm) void {
     if (self.fd_duty_cycle) |fd| {
         std.os.close(fd);
@@ -52,9 +52,9 @@ pub fn deinit(self: *Pwm) void {
     }
 }
 
-/// Export PWM channel through sysfs
+/// 通过sysfs导出PWM通道
 fn exportChannel(self: *Pwm) !void {
-    // Open the export file
+    // 打开导出文件
     var export_path_buf: [64]u8 = undefined;
     const export_path = try std.fmt.bufPrint(&export_path_buf, "/sys/class/pwm/pwmchip{}/export", .{self.chip});
     
@@ -65,7 +65,7 @@ fn exportChannel(self: *Pwm) !void {
     };
     defer std.os.close(export_fd);
     
-    // Write channel number to export
+    // 将通道号写入导出文件
     var buffer: [16]u8 = undefined;
     const channel_str = try std.fmt.bufPrint(&buffer, "{}\n", .{self.channel});
     _ = std.os.write(export_fd, channel_str) catch |err| switch (err) {
@@ -80,10 +80,10 @@ fn exportChannel(self: *Pwm) !void {
         else => return err,
     };
     
-    // Give the system a moment to create the files
+    // 给系统一些时间来创建文件
     std.time.sleep(1000000); // 1ms
     
-    // Open duty_cycle file for read/write
+    // 打开duty_cycle文件进行读写
     var duty_cycle_path_buf: [80]u8 = undefined;
     const duty_cycle_path = try std.fmt.bufPrint(&duty_cycle_path_buf, "/sys/class/pwm/pwmchip{}/pwm{}/duty_cycle", .{self.chip, self.channel});
     
@@ -93,7 +93,7 @@ fn exportChannel(self: *Pwm) !void {
         else => return err,
     };
     
-    // Open period file for read/write
+    // 打开period文件进行读写
     var period_path_buf: [80]u8 = undefined;
     const period_path = try std.fmt.bufPrint(&period_path_buf, "/sys/class/pwm/pwmchip{}/pwm{}/period", .{self.chip, self.channel});
     
@@ -103,7 +103,7 @@ fn exportChannel(self: *Pwm) !void {
         else => return err,
     };
     
-    // Open enable file for read/write
+    // 打开enable文件进行读写
     var enable_path_buf: [80]u8 = undefined;
     const enable_path = try std.fmt.bufPrint(&enable_path_buf, "/sys/class/pwm/pwmchip{}/pwm{}/enable", .{self.chip, self.channel});
     
@@ -114,7 +114,7 @@ fn exportChannel(self: *Pwm) !void {
     };
 }
 
-/// Unexport PWM channel through sysfs
+/// 通过sysfs取消导出PWM通道
 fn unexportChannel(self: *Pwm) !void {
     var unexport_path_buf: [64]u8 = undefined;
     const unexport_path = try std.fmt.bufPrint(&unexport_path_buf, "/sys/class/pwm/pwmchip{}/unexport", .{self.chip});
@@ -141,7 +141,7 @@ fn unexportChannel(self: *Pwm) !void {
     };
 }
 
-/// Set PWM period in nanoseconds
+/// 设置PWM周期（纳秒）
 pub fn setPeriod(self: *Pwm, period_ns: u32) !void {
     if (self.fd_period == null) return Error.SetPeriodFailed;
     
@@ -161,7 +161,7 @@ pub fn setPeriod(self: *Pwm, period_ns: u32) !void {
     };
 }
 
-/// Set PWM duty cycle in nanoseconds
+/// 设置PWM占空比（纳秒）
 pub fn setDutyCycle(self: *Pwm, duty_cycle_ns: u32) !void {
     if (self.fd_duty_cycle == null) return Error.SetDutyCycleFailed;
     
@@ -181,7 +181,7 @@ pub fn setDutyCycle(self: *Pwm, duty_cycle_ns: u32) !void {
     };
 }
 
-/// Enable/disable PWM output
+/// 启用/禁用PWM输出
 pub fn enable(self: *Pwm, enabled: bool) !void {
     if (self.fd_enable == null) return Error.EnableFailed;
     
@@ -202,8 +202,8 @@ pub fn enable(self: *Pwm, enabled: bool) !void {
 
 // Test function for PWM driver
 test "PWM driver functionality" {
-    // Note: This test would require root access and actual PWM hardware to run
-    // For simulation purposes, we're just checking compilation
+    // 注意：此测试需要root权限和实际的PWM硬件才能运行
+    // 出于模拟目的，我们只检查编译
     const pwm = Pwm{
         .chip = 0,
         .channel = 0,

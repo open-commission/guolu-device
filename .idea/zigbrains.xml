@@ -5,7 +5,7 @@
       <list><![CDATA[{
   "name": null,
   "version": null,
-  "path": "D:\\dev\\project\\zig",
+  "path": "D:\\dev\\project\\zig\\guolu",
   "steps": [
     {
       "name": "install",
@@ -30,7 +30,7 @@
   ],
   "modules": [
     {
-      "root": "src\\root.zig",
+      "root": "src\\drivers.zig",
       "public": true,
       "imports": []
     },
@@ -39,7 +39,7 @@
       "public": false,
       "imports": [
         {
-          "name": "zig",
+          "name": "drivers",
           "owner": 0,
           "module": 0
         }

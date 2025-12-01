@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// UART driver for Linux-based embedded systems
+/// Linux嵌入式系统的UART驱动程序
 const Uart = @This();
 
 device_path: []const u8,
@@ -12,7 +12,7 @@ const Error = error{
     WriteFailed,
 };
 
-/// Initialize UART device
+/// 初始化UART设备
 pub fn init(allocator: std.mem.Allocator, device_path: []const u8) !Uart {
     const path = try allocator.dupe(u8, device_path);
 
@@ -28,7 +28,7 @@ pub fn init(allocator: std.mem.Allocator, device_path: []const u8) !Uart {
     };
 }
 
-/// Deinitialize UART device
+/// 取消初始化UART设备
 pub fn deinit(self: *Uart, allocator: std.mem.Allocator) void {
     if (self.fd) |fd| {
         std.os.close(fd);
@@ -37,7 +37,7 @@ pub fn deinit(self: *Uart, allocator: std.mem.Allocator) void {
     allocator.free(self.device_path);
 }
 
-/// Write data to UART
+/// 向UART写入数据
 pub fn write(self: *Uart, data: []const u8) !usize {
     if (self.fd == null) return Error.WriteFailed;
 
@@ -54,7 +54,7 @@ pub fn write(self: *Uart, data: []const u8) !usize {
     };
 }
 
-/// Read data from UART
+/// 从UART读取数据
 pub fn read(self: *Uart, buffer: []u8) !usize {
     if (self.fd == null) return Error.ReadFailed;
 
@@ -67,7 +67,7 @@ pub fn read(self: *Uart, buffer: []u8) !usize {
     };
 }
 
-/// Read a line from UART (until newline character)
+/// 从UART读取一行（直到换行符）
 pub fn readLine(self: *Uart, buffer: []u8) !usize {
     if (self.fd == null) return Error.ReadFailed;
 
@@ -85,7 +85,7 @@ pub fn readLine(self: *Uart, buffer: []u8) !usize {
     return i;
 }
 
-// Test function for UART driver
+// UART驱动程序的测试函数
 test "UART driver functionality" {
     // Note: This test would require actual UART device to run
     // For simulation purposes, we're just checking compilation

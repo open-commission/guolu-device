@@ -1,6 +1,6 @@
 const std = @import("std");
 
-/// GPIO driver for Linux-based embedded systems using sysfs interface
+/// 使用sysfs接口的Linux嵌入式系统的GPIO驱动程序
 const Gpio = @This();
 
 pin_number: u32,
@@ -21,7 +21,7 @@ const Error = error{
     GetValueFailed,
 };
 
-/// Initialize GPIO pin
+/// 初始化GPIO引脚
 pub fn init(pin_number: u32) !Gpio {
     var gpio = Gpio{
         .pin_number = pin_number,
@@ -30,14 +30,14 @@ pub fn init(pin_number: u32) !Gpio {
         .fd_direction = null,
     };
     
-    // Export the GPIO pin
+    // 导出GPIO引脚
     try gpio.exportPin();
     gpio.exported = true;
     
     return gpio;
 }
 
-/// Deinitialize GPIO pin
+/// 取消初始化GPIO引脚
 pub fn deinit(self: *Gpio) void {
     if (self.fd_value) |fd| {
         std.os.close(fd);
@@ -50,9 +50,9 @@ pub fn deinit(self: *Gpio) void {
     }
 }
 
-/// Export GPIO pin through sysfs
+/// 通过sysfs导出GPIO引脚
 fn exportPin(self: *Gpio) !void {
-    // Open the export file
+    // 打开导出文件
     const export_fd = std.os.open("/sys/class/gpio/export", std.os.O_WRONLY, 0) catch |err| switch (err) {
         error.FileNotFound => return Error.ExportFailed,
         error.AccessDenied => return Error.ExportFailed,
@@ -60,7 +60,7 @@ fn exportPin(self: *Gpio) !void {
     };
     defer std.os.close(export_fd);
     
-    // Write pin number to export
+    // 写入引脚号以导出
     var buffer: [16]u8 = undefined;
     const pin_str = try std.fmt.bufPrint(&buffer, "{}\n", .{self.pin_number});
     _ = std.os.write(export_fd, pin_str) catch |err| switch (err) {
@@ -75,10 +75,10 @@ fn exportPin(self: *Gpio) !void {
         else => return err,
     };
     
-    // Give the system a moment to create the files
+    // 给系统一点时间创建文件
     std.time.sleep(1000000); // 1ms
     
-    // Open value file for read/write
+    // 打开值文件进行读写
     var value_path_buf: [64]u8 = undefined;
     const value_path = try std.fmt.bufPrint(&value_path_buf, "/sys/class/gpio/gpio{}/value", .{self.pin_number});
     
@@ -88,7 +88,7 @@ fn exportPin(self: *Gpio) !void {
         else => return err,
     };
     
-    // Open direction file for read/write
+    // 打开方向文件进行读写
     var direction_path_buf: [64]u8 = undefined;
     const direction_path = try std.fmt.bufPrint(&direction_path_buf, "/sys/class/gpio/gpio{}/direction", .{self.pin_number});
     
@@ -99,7 +99,7 @@ fn exportPin(self: *Gpio) !void {
     };
 }
 
-/// Unexport GPIO pin through sysfs
+/// 通过sysfs取消导出GPIO引脚
 fn unexportPin(self: *Gpio) !void {
     const unexport_fd = std.os.open("/sys/class/gpio/unexport", std.os.O_WRONLY, 0) catch |err| switch (err) {
         error.FileNotFound => return Error.UnexportFailed,
@@ -123,7 +123,7 @@ fn unexportPin(self: *Gpio) !void {
     };
 }
 
-/// Set GPIO pin direction
+/// 设置GPIO引脚方向
 pub fn setDirection(self: *Gpio, direction: Direction) !void {
     if (self.fd_direction == null) return Error.SetDirectionFailed;
     
@@ -145,7 +145,7 @@ pub fn setDirection(self: *Gpio, direction: Direction) !void {
     };
 }
 
-/// Set GPIO pin value (high/low)
+/// 设置GPIO引脚值（高/低）
 pub fn setValue(self: *Gpio, value: bool) !void {
     if (self.fd_value == null) return Error.SetValueFailed;
     
@@ -164,7 +164,7 @@ pub fn setValue(self: *Gpio, value: bool) !void {
     };
 }
 
-/// Get GPIO pin value
+/// 获取GPIO引脚值
 pub fn getValue(self: *Gpio) !bool {
     if (self.fd_value == null) return Error.GetValueFailed;
     
@@ -179,7 +179,7 @@ pub fn getValue(self: *Gpio) !bool {
     return Error.GetValueFailed;
 }
 
-// Test function for GPIO driver
+// GPIO驱动程序的测试函数
 test "GPIO driver functionality" {
     // Note: This test would require root access and actual GPIO pins to run
     // For simulation purposes, we're just checking compilation
